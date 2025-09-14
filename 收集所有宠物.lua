@@ -20,15 +20,15 @@ local X = Material.Load({
 })
 
 local M = X.New({
-    Title = "Main"
+    Title = "主要"
 })
 
 local M1 = X.New({
-    Title = "Misc"
+    Title = "其他"
 })
 
 local Cred = X.New({
-    Title = "Credits"
+    Title = "联系"
 })
     Cred.Button({
     Text = "添加Wechat",
