@@ -83,7 +83,7 @@ thanksText.Size = UDim2.new(1, -80, 0, 30)
 thanksText.Position = UDim2.new(0, 65, 0, 20)
 thanksText.BackgroundTransparency = 1
 thanksText.Font = Enum.Font.GothamBold
-thanksText.Text = "感谢您的资助"
+thanksText.Text = "鎰熻阿鎮ㄧ殑璧勫姪"
 thanksText.TextSize = 24
 thanksText.TextColor3 = Color3.fromRGB(255, 255, 255)
 thanksText.TextXAlignment = Enum.TextXAlignment.Left
@@ -134,7 +134,7 @@ fadeTween.Completed:Connect(function()
     screenGui:Destroy()
 end)
 
-DTNAME = "收集所有宠物"
+DTNAME = "鏀堕泦鎵€鏈夊疇鐗�"
 local uiName = DTNAME;
 local a =
     setmetatable(
@@ -236,13 +236,13 @@ x.BackgroundTransparency = 0.75
 
 u.Name = "Open"
 u.Parent = t
-u.BackgroundColor3 = v.BackgroundColor3--u的
+u.BackgroundColor3 = v.BackgroundColor3--u鐨�
 u.Position = UDim2.new(0.839879155, 0, -0.0123076923, 0)
 u.BorderSizePixel = 2
 u.BorderColor3 = x.BackgroundColor3
 u.Size = UDim2.new(0, 55, 0, 25)
 u.Font = Enum.Font.SourceSans
-u.Text = "Jin定制"
+u.Text = "Jin瀹氬埗"
 u.TextColor3 = Color3.fromRGB(255, 255, 255)
 u.TextSize = 14.000
 u.Active = true
@@ -251,7 +251,7 @@ u.MouseButton1Down:connect(
     function()
         TOGGLE = not TOGGLE
         v.Visible = TOGGLE
-        u.Text = TOGGLE and "Jin定制" or "Jin定制"
+        u.Text = TOGGLE and "Jin瀹氬埗" or "Jin瀹氬埗"
     end
 )
 y.CornerRadius = c(0, 6)
@@ -653,10 +653,10 @@ function library:CreateTab(a7)
     local a9 = f("UICorner")
     local aa = f("Frame")
     local ab = f("UICorner")
-    local ac = f("UIGradient")--UI界面渐变
-    local ad = f("ScrollingFrame")--滑动框架
-    local ae = f("UIPadding")--UI填充
-    local af = f("UIListLayout")--UI列表布局
+    local ac = f("UIGradient")--UI鐣岄潰娓愬彉
+    local ad = f("ScrollingFrame")--婊戝姩妗嗘灦
+    local ae = f("UIPadding")--UI濉厖
+    local af = f("UIListLayout")--UI鍒楄〃甯冨眬
     a8.Name = "TabButton"
     a8.Parent = B
     a8.BackgroundColor3 = e(52, 62, 72)
@@ -683,8 +683,8 @@ function library:CreateTab(a7)
     ab.Name = "GlowCorner"
     ab.Parent = aa
     ac.Color =
-        ColorSequence.new {--渐变颜色顺序
-        ColorSequenceKeypoint.new(0.00, e(255, 255, 255)),--颜色顺序关键点
+        ColorSequence.new {--娓愬彉棰滆壊椤哄簭
+        ColorSequenceKeypoint.new(0.00, e(255, 255, 255)),--棰滆壊椤哄簭鍏抽敭鐐�
         ColorSequenceKeypoint.new(0.50, e(255, 255, 255)),
         ColorSequenceKeypoint.new(1.00, e(255, 255, 255))
     }
@@ -1366,9 +1366,3 @@ setmetatable(
             rawset(self, bn, bo)
         end}
 )
-
-local lin1 = library:CreateTab("")
-
-lin1:Button("",function()
-
-end)
