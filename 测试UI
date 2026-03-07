@@ -1,383 +1,245 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
+-- 优化后的脚本：添加窗口锁定功能，禁止拖动
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/heran2k21/-/refs/heads/main/heran01227"))()
 
--- 创建主UI ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ModernUI"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
-
--- 主框架
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 400, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-
--- 添加圆角
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 8)
-corner.Parent = mainFrame
-
--- 添加阴影
-local shadow = Instance.new("ImageLabel")
-shadow.Name = "Shadow"
-shadow.Size = UDim2.new(1, 20, 1, 20)
-shadow.Position = UDim2.new(0, -10, 0, -10)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.new(0, 0, 0)
-shadow.ImageTransparency = 0.5
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-shadow.Parent = mainFrame
-
--- 标题栏
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 8)
-titleCorner.Parent = titleBar
-
--- 只保留顶部圆角
-local topOnlyCorner = Instance.new("UICorner")
-topOnlyCorner.CornerRadius = UDim.new(0, 8)
-topOnlyCorner.Parent = titleBar
-task.wait()
-titleBar.ClipsDescendants = true
-
--- 标题文字
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, -50, 1, 0)
-titleLabel.Position = UDim2.new(0, 15, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "现代化UI界面"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 18
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = titleBar
-
--- 关闭按钮
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 30, 0, 30)
-closeButton.Position = UDim2.new(1, -40, 0.5, -15)
-closeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-closeButton.Text = "✕"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextSize = 20
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = titleBar
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 5)
-closeCorner.Parent = closeButton
-
--- 标签页区域
-local tabFrame = Instance.new("Frame")
-tabFrame.Name = "TabFrame"
-tabFrame.Size = UDim2.new(1, 0, 0, 50)
-tabFrame.Position = UDim2.new(0, 0, 0, 40)
-tabFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-tabFrame.BorderSizePixel = 0
-tabFrame.Parent = mainFrame
-
--- 内容区域
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "ContentFrame"
-contentFrame.Size = UDim2.new(1, -20, 1, -120)
-contentFrame.Position = UDim2.new(0, 10, 0, 100)
-contentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-contentFrame.BorderSizePixel = 0
-contentFrame.Parent = mainFrame
-
-local contentCorner = Instance.new("UICorner")
-contentCorner.CornerRadius = UDim.new(0, 6)
-contentCorner.Parent = contentFrame
-
--- 创建标签页按钮函数
-local function createTab(name, position)
-    local tabButton = Instance.new("TextButton")
-    tabButton.Name = name .. "Tab"
-    tabButton.Size = UDim2.new(0, 100, 1, 0)
-    tabButton.Position = UDim2.new(0, position, 0, 0)
-    tabButton.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-    tabButton.Text = name
-    tabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    tabButton.TextSize = 16
-    tabButton.Font = Enum.Font.Gotham
-    tabButton.BorderSizePixel = 0
-    tabButton.Parent = tabFrame
-    
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 6)
-    tabCorner.Parent = tabButton
-    
-    return tabButton
-end
-
--- 创建标签页
-local tab1 = createTab("主页", 10)
-local tab2 = createTab("设置", 120)
-local tab3 = createTab("关于", 230)
-
--- 创建滚动框
-local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Name = "ScrollingFrame"
-scrollingFrame.Size = UDim2.new(1, -20, 1, -20)
-scrollingFrame.Position = UDim2.new(0, 10, 0, 10)
-scrollingFrame.BackgroundTransparency = 1
-scrollingFrame.BorderSizePixel = 0
-scrollingFrame.ScrollBarThickness = 4
-scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 80)
-scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollingFrame.Parent = contentFrame
-
--- 创建UI元素的辅助函数
-local function createButton(parent, text, position, callback)
-    local button = Instance.new("TextButton")
-    button.Name = "Button"
-    button.Size = UDim2.new(1, -20, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, position)
-    button.BackgroundColor3 = Color3.fromRGB(60, 100, 200)
-    button.Text = text
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 16
-    button.Font = Enum.Font.Gotham
-    button.BorderSizePixel = 0
-    button.Parent = parent
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = button
-    
-    -- 悬停效果
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 120, 255)}):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 100, 200)}):Play()
-    end)
-    
-    button.MouseButton1Click:Connect(callback)
-    
-    return button
-end
-
-local function createSlider(parent, text, position, default, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Name = "SliderFrame"
-    sliderFrame.Size = UDim2.new(1, -20, 0, 60)
-    sliderFrame.Position = UDim2.new(0, 10, 0, position)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    sliderFrame.BorderSizePixel = 0
-    sliderFrame.Parent = parent
-    
-    local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 6)
-    sliderCorner.Parent = sliderFrame
-    
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -20, 0, 20)
-    label.Position = UDim2.new(0, 10, 0, 5)
-    label.BackgroundTransparency = 1
-    label.Text = text .. ": " .. default
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 14
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = sliderFrame
-    
-    local slider = Instance.new("Frame")
-    slider.Name = "Slider"
-    slider.Size = UDim2.new(1, -40, 0, 4)
-    slider.Position = UDim2.new(0, 20, 0, 35)
-    slider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-    slider.BorderSizePixel = 0
-    slider.Parent = sliderFrame
-    
-    local sliderCorner2 = Instance.new("UICorner")
-    sliderCorner2.CornerRadius = UDim.new(0, 2)
-    sliderCorner2.Parent = slider
-    
-    local fill = Instance.new("Frame")
-    fill.Name = "Fill"
-    fill.Size = UDim2.new(default/100, 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(60, 100, 200)
-    fill.BorderSizePixel = 0
-    fill.Parent = slider
-    
-    local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 2)
-    fillCorner.Parent = fill
-    
-    local drag = Instance.new("TextButton")
-    drag.Name = "Drag"
-    drag.Size = UDim2.new(0, 16, 0, 16)
-    drag.Position = UDim2.new(default/100, -8, 0.5, -8)
-    drag.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    drag.Text = ""
-    drag.BorderSizePixel = 0
-    drag.Parent = slider
-    
-    local dragCorner = Instance.new("UICorner")
-    dragCorner.CornerRadius = UDim.new(0, 8)
-    dragCorner.Parent = drag
-    
-    local dragging = false
-    
-    drag.MouseButton1Down:Connect(function()
-        dragging = true
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
+-- 获取GUI并锁定的函数
+local function lockGUI()
+    local success, err = pcall(function()
+        -- 尝试多种方式找到并锁定GUI
+        local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+        
+        -- 等待并查找Material GUI
+        for _, gui in pairs(playerGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name:find("Material") then
+                -- 禁用拖动功能
+                gui.Draggable = false
+                
+                -- 查找并禁用所有Frame的拖动
+                for _, frame in pairs(gui:GetDescendants()) do
+                    if frame:IsA("Frame") then
+                        frame.Active = false
+                        frame.Draggable = false
+                        
+                        -- 如果存在拖动逻辑，禁用鼠标事件
+                        if frame:FindFirstChild("Drag") then
+                            frame.Drag:Destroy()
+                        end
+                        
+                        -- 禁用鼠标按钮1事件（通常用于拖动）
+                        frame.MouseButton1Down:Disconnect()
+                    end
+                    
+                    -- 禁用ImageButton和TextButton的拖动
+                    if frame:IsA("ImageButton") or frame:IsA("TextButton") then
+                        frame.Draggable = false
+                        frame.MouseButton1Down:Disconnect()
+                    end
+                end
+                
+                -- 强制设置属性防止拖动
+                gui.ResetOnSpawn = false
+                gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            end
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local pos = UIS:GetMouseLocation().X - slider.AbsolutePosition.X
-            local percent = math.clamp(pos / slider.AbsoluteSize.X, 0, 1)
-            fill.Size = UDim2.new(percent, 0, 1, 0)
-            drag.Position = UDim2.new(percent, -8, 0.5, -8)
-            local value = math.floor(percent * 100)
-            label.Text = text .. ": " .. value
-            callback(value)
+    if not success then
+        warn("锁定GUI时出错: " .. tostring(err))
+    end
+end
+
+-- 创建带有锁定功能的GUI
+local X = Material.Load({
+    Title = "收集所有宠物丨By:Heran",
+    Style = 3,
+    SizeX = 300,
+    SizeY = 350,
+    Theme = "Light",
+    ColorOverrides = {
+        MainFrame = Color3.fromRGB(0,0,0),
+        Toggle = Color3.fromRGB(124,37,255),
+        ToggleAccent = Color3.fromRGB(255,255,255), 
+        Dropdown = Color3.fromRGB(124,37,255),
+		DropdownAccent = Color3.fromRGB(255,255,255),
+        Slider = Color3.fromRGB(124,37,255),
+		SliderAccent = Color3.fromRGB(255,255,255),
+        NavBarAccent = Color3.fromRGB(0,0,0),
+        Content = Color3.fromRGB(0,0,0),
+    }
+})
+
+-- 立即锁定GUI
+task.wait(0.1)
+lockGUI()
+
+-- 添加一个按钮来重新锁定（如果需要）
+local M = X.New({
+    Title = "主要"
+})
+
+local M1 = X.New({
+    Title = "其他"
+})
+
+local Cred = X.New({
+    Title = "联系"
+})
+Cred.Button({
+    Text = "添加Wechat",
+    Callback = function()
+        setclipboard("heran01227")
+        toclipboard("heran01227")
+    end,
+})
+
+-- 在联系页面添加锁定按钮
+Cred.Button({
+    Text = "锁定窗口",
+    Callback = function()
+        lockGUI()
+    end,
+})
+
+local Egg = {}
+
+for i, v in pairs(game:GetService("Workspace").EggShops:GetChildren()) do
+    if v:IsA("Model") then
+        if not table.find(Egg, tostring(v)) then
+            table.insert(Egg, tostring(v))
         end
-    end)
-    
-    return sliderFrame
+    end
 end
 
-local function createToggle(parent, text, position, default, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Name = "ToggleFrame"
-    toggleFrame.Size = UDim2.new(1, -20, 0, 40)
-    toggleFrame.Position = UDim2.new(0, 10, 0, position)
-    toggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    toggleFrame.BorderSizePixel = 0
-    toggleFrame.Parent = parent
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 6)
-    toggleCorner.Parent = toggleFrame
-    
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -50, 1, 0)
-    label.Position = UDim2.new(0, 10, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 14
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = toggleFrame
-    
-    local toggle = Instance.new("TextButton")
-    toggle.Name = "Toggle"
-    toggle.Size = UDim2.new(0, 40, 0, 20)
-    toggle.Position = UDim2.new(1, -50, 0.5, -10)
-    toggle.BackgroundColor3 = default and Color3.fromRGB(60, 100, 200) or Color3.fromRGB(80, 80, 90)
-    toggle.Text = ""
-    toggle.BorderSizePixel = 0
-    toggle.Parent = toggleFrame
-    
-    local toggleCorner2 = Instance.new("UICorner")
-    toggleCorner2.CornerRadius = UDim.new(0, 10)
-    toggleCorner2.Parent = toggle
-    
-    local circle = Instance.new("Frame")
-    circle.Name = "Circle"
-    circle.Size = UDim2.new(0, 16, 0, 16)
-    circle.Position = default and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8)
-    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    circle.BorderSizePixel = 0
-    circle.Parent = toggle
-    
-    local circleCorner = Instance.new("UICorner")
-    circleCorner.CornerRadius = UDim.new(0, 8)
-    circleCorner.Parent = circle
-    
-    local toggled = default
-    
-    toggle.MouseButton1Click:Connect(function()
-        toggled = not toggled
-        toggle.BackgroundColor3 = toggled and Color3.fromRGB(60, 100, 200) or Color3.fromRGB(80, 80, 90)
-        local goalPos = toggled and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8)
-        TweenService:Create(circle, TweenInfo.new(0.2), {Position = goalPos}):Play()
-        callback(toggled)
-    end)
-    
-    return toggleFrame
+local Area = {}
+
+for i, v in pairs(game:GetService("Workspace").Areas:GetChildren()) do
+    if v:IsA("Part") then
+        table.insert(Area, tostring(v))
+    end
 end
 
--- 添加UI元素到滚动框
-local yPos = 10
+local function getClosestCoin()
+    local dist, thing = math.huge
+    for i, v in next, game:GetService("Workspace").Drops:GetChildren() do
+        if v:IsA("Model") then
+            local mag =
+                (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Base.Position).magnitude
+            if mag < dist then
+                dist = mag
+                thing = v
+            end
+        end
+    end
+    return thing
+end
 
--- 按钮示例
-createButton(scrollingFrame, "点击我！", yPos, function()
-    print("按钮被点击了！")
-end)
-yPos = yPos + 50
+M.Toggle({
+    Text = "全图收集金币",
+    Callback = function(Value)
+        a = Value
+        while a do 
+            task.wait()
+            pcall(function()
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = getClosestCoin().Base.CFrame
+            end)
+        end
+    end,
+    Enabled = false
+})
 
--- 开关示例
-createToggle(scrollingFrame, "启用功能", yPos, true, function(state)
-    print("开关状态:", state)
-end)
-yPos = yPos + 50
+M.Dropdown({
+    Text = "选择蛋",
+    Callback = function(Value)
+        getgenv().egg = Value
+    end,
+    Options = Egg
+})
 
--- 滑块示例
-createSlider(scrollingFrame, "音量", yPos, 50, function(value)
-    print("音量:", value)
-end)
-yPos = yPos + 70
+local function getClosestEgg()
+    local dist, thing = math.huge
+    for i, v in next, game:GetService("Workspace").EggShops:GetChildren() do
+        if v:IsA("Model") and v.Name == egg then
+            local mag =
+                (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.ProxPart.Position).magnitude
+            if mag < dist then
+                dist = mag
+                thing = v
+            end
+        end
+    end
+    return thing
+end
 
--- 更新滚动框的画布大小
-scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 10)
+M.Toggle({
+    Text = "买蛋",
+    Callback = function(Value)
+        a1 = Value
+        while a1 do 
+            task.wait()
+            local args = {
+                [1] = getClosestEgg().Rarity.Value
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyEgg:FireServer(unpack(args))
+        end
+    end,
+    Enabled = false
+})
 
--- 关闭按钮功能
-closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
+M.Toggle({
+    Text = "打开隐藏蛋",
+    Callback = function(Value)
+        a2 = Value
+        while a2 do 
+            task.wait()
+            for i,v in pairs(game:GetService("Workspace").HiddenEggs:GetDescendants()) do
+                if v:IsA("TouchTransmitter") then
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 0)
+                    wait()
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 1)
+                end
+            end
+        end
+    end,
+    Enabled = false
+})
 
--- 拖动功能
-local dragging = false
-local dragOffset = Vector2.new()
+M.Toggle({
+    Text = "自动领取任务奖励",
+    Callback = function(Value)
+        a3 = Value
+        while a3 do 
+            task.wait()
+            game:GetService("ReplicatedStorage").Remotes.ClaimQuestReward:FireServer()
+        end
+    end,
+    Enabled = false
+})
 
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragOffset = Vector2.new(input.Position.X - mainFrame.AbsolutePosition.X, 
-                                 input.Position.Y - mainFrame.AbsolutePosition.Y)
+M.Dropdown({
+    Text = "选择场景",
+    Callback = function(Value)
+        getgenv().area = Value
+    end,
+    Options = Area
+})
+
+M.Button({
+    Text = "传送至",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Areas[area].CFrame
+    end,
+})
+
+-- 定期检查并重新锁定（防止游戏重置属性）
+coroutine.wrap(function()
+    while task.wait(1) do
+        lockGUI()
+    end
+end)()
+
+-- 监听GUI变化并重新锁定
+game:GetService("Players").LocalPlayer.PlayerGui.ChildAdded:Connect(function(child)
+    if child:IsA("ScreenGui") and child.Name:find("Material") then
+        task.wait(0.1)
+        lockGUI()
     end
 end)
-
-titleBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local newPos = UDim2.new(0, input.Position.X - dragOffset.X, 0, input.Position.Y - dragOffset.Y)
-        mainFrame.Position = newPos
-    end
-end)
-
-print("UI加载完成！")
