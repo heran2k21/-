@@ -83,7 +83,7 @@ thanksText.Size = UDim2.new(1, -80, 0, 30)
 thanksText.Position = UDim2.new(0, 65, 0, 20)
 thanksText.BackgroundTransparency = 1
 thanksText.Font = Enum.Font.GothamBold
-thanksText.Text = "谢谢你的资助"
+thanksText.Text = "谢谢您的资助"
 thanksText.TextSize = 24
 thanksText.TextColor3 = Color3.fromRGB(255, 255, 255)
 thanksText.TextXAlignment = Enum.TextXAlignment.Left
@@ -95,7 +95,7 @@ messageText.Size = UDim2.new(1, -80, 0, 40)
 messageText.Position = UDim2.new(0, 65, 0, 50)
 messageText.BackgroundTransparency = 1
 messageText.Font = Enum.Font.Gotham
-messageText.Text = "无敌木木大王"
+messageText.Text = "By:heran"
 messageText.TextSize = 16
 messageText.TextColor3 = Color3.fromRGB(200, 200, 200)
 messageText.TextXAlignment = Enum.TextXAlignment.Left
@@ -134,7 +134,7 @@ fadeTween.Completed:Connect(function()
     screenGui:Destroy()
 end)
 
-DTNAME = "脚本名"
+DTNAME = "定制"
 local uiName = DTNAME;
 local a =
     setmetatable(
