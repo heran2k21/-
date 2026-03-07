@@ -83,7 +83,7 @@ thanksText.Size = UDim2.new(1, -80, 0, 30)
 thanksText.Position = UDim2.new(0, 65, 0, 20)
 thanksText.BackgroundTransparency = 1
 thanksText.Font = Enum.Font.GothamBold
-thanksText.Text = "谢谢您的资助"
+thanksText.Text = "感谢您的资助"
 thanksText.TextSize = 24
 thanksText.TextColor3 = Color3.fromRGB(255, 255, 255)
 thanksText.TextXAlignment = Enum.TextXAlignment.Left
@@ -134,7 +134,7 @@ fadeTween.Completed:Connect(function()
     screenGui:Destroy()
 end)
 
-DTNAME = "定制"
+DTNAME = "收集所有宠物"
 local uiName = DTNAME;
 local a =
     setmetatable(
@@ -242,7 +242,7 @@ u.BorderSizePixel = 2
 u.BorderColor3 = x.BackgroundColor3
 u.Size = UDim2.new(0, 55, 0, 25)
 u.Font = Enum.Font.SourceSans
-u.Text = "林"
+u.Text = "Jin定制"
 u.TextColor3 = Color3.fromRGB(255, 255, 255)
 u.TextSize = 14.000
 u.Active = true
@@ -251,7 +251,7 @@ u.MouseButton1Down:connect(
     function()
         TOGGLE = not TOGGLE
         v.Visible = TOGGLE
-        u.Text = TOGGLE and "林" or "林"
+        u.Text = TOGGLE and "Jin定制" or "Jin定制"
     end
 )
 y.CornerRadius = c(0, 6)
