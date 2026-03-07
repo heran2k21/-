@@ -1,4 +1,4 @@
-local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/heran2k21/-/refs/heads/main/heran01227"))()
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/heran2k21/-/refs/heads/main/%E6%B5%8B%E8%AF%95UI"))()
 
 local X = Material.Load({
     Title = "收集所有宠物丨By:Heran",
