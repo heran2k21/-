@@ -160,6 +160,14 @@ OtherTab:Button("获取所有蛋名称", function()
     })
 end)
 
+OtherTab:Button("反挂机", function()
+    library:Notify({
+        Title = "开启成功",
+        Text = "已开启挂机防踢出",
+        Duration = 3
+    })
+end)
+
 OtherTab:Button("获取所有区域名称", function()
     local areaList = ""
     for i, areaName in pairs(Area) do
