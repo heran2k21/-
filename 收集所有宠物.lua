@@ -1,21 +1,8 @@
-
 local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/heran2k21/-/refs/heads/main/%E6%B5%8B%E8%AF%95UI"))()
 
 -- 创建主标签页
 local MainTab = library:CreateTab("主要")
-local OtherTab = library:CreateTab("其他")
-local ContactTab = library:CreateTab("联系")
-
--- 联系标签页的按钮
-ContactTab:Button("添加Wechat", function()
-    setclipboard("heran01227")
-    toclipboard("heran01227")
-    library:Notify({
-        Title = "复制成功",
-        Text = "微信号已复制到剪贴板",
-        Duration = 3
-    })
-end)
+local AboutTab = library:CreateTab("关于")
 
 -- 获取所有蛋
 local Egg = {}
@@ -146,67 +133,57 @@ MainTab:Button("传送至", function()
     end
 end)
 
--- 添加一些其他功能到"其他"标签页
-OtherTab:Button("获取所有蛋名称", function()
-    local eggList = ""
-    for i, eggName in pairs(Egg) do
-        eggList = eggList .. eggName .. "\n"
-    end
-    setclipboard(eggList)
-    library:Notify({
-        Title = "复制成功",
-        Text = "蛋列表已复制到剪贴板",
-        Duration = 3
-    })
-end)
-
-OtherTab:Button("反挂机", function()
-    library:Notify({
-        Title = "开启成功",
-        Text = "已开启挂机防踢出",
-        Duration = 3
-    })
-end)
-
-OtherTab:Button("获取所有区域名称", function()
-    local areaList = ""
-    for i, areaName in pairs(Area) do
-        areaList = areaList .. areaName .. "\n"
-    end
-    setclipboard(areaList)
-    library:Notify({
-        Title = "复制成功",
-        Text = "区域列表已复制到剪贴板",
-        Duration = 3
-    })
-end)
-
--- 添加一个重置所有开关的按钮
-OtherTab:Button("关闭所有功能", function()
-    getgenv().CollectCoins = false
-    getgenv().BuyEggs = false
-    getgenv().OpenHiddenEggs = false
-    getgenv().ClaimRewards = false
+-- 反挂机功能 - 每5分钟执行一次
+local function antiAfk()
+    local player = game.Players.LocalPlayer
     
-    -- 更新UI开关状态
-    library.flags["CollectCoins"]:SetState(false)
-    library.flags["BuyEggs"]:SetState(false)
-    library.flags["OpenHiddenEggs"]:SetState(false)
-    library.flags["ClaimRewards"]:SetState(false)
+    -- 等待角色加载
+    repeat task.wait() until player.Character
     
-    library:Notify({
-        Title = "已关闭",
-        Text = "所有自动功能已关闭",
-        Duration = 2
-    })
+    while getgenv().AntiAfk do
+        task.wait(300) -- 300秒 = 5分钟执行一次
+        
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                local humanoid = player.Character.Humanoid
+                
+                -- 执行跳跃动作
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
+end
+
+-- 在主要标签页添加反挂机开关
+MainTab:Toggle("反挂机 (每5分钟跳跃)", "AntiAfk", false, function(Value)
+    getgenv().AntiAfk = Value
+    if Value then
+        -- 启动反挂机线程
+        coroutine.wrap(antiAfk)()
+        library:Notify({
+            Title = "反挂机",
+            Text = "已开启，每5分钟自动跳跃一次",
+            Duration = 3
+        })
+    else
+        library:Notify({
+            Title = "反挂机",
+            Text = "已关闭",
+            Duration = 2
+        })
+    end
 end)
 
--- 添加版本信息
-local VersionLabel = Instance.new("TextLabel")
-VersionLabel.Parent = MainTab[1]  -- MainTab[1] 是 ScrollingFrame
-VersionLabel.Size = UDim2.new(0, 312, 0, 20)
-VersionLabel.BackgroundTransparency = 1
-VersionLabel.Text = "收集所有宠物丨By:Heran  v1.0"
-VersionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-VersionLabel.TextSize = 12
-VersionLabel.Font = Enum.Font.Gotham
+-- 使用按钮来显示关于信息（移除了联系方式）
+AboutTab:Button("📦 脚本名称：收集所有宠物", function() end)
+AboutTab:Button("👤 作者：Heran", function() end)
+AboutTab:Button("📌 版本：v0.81/Jin定制", function() end)
+AboutTab:Button("📅 最后更新：2026年3月8日", function() end)
+AboutTab:Button("──────────────────", function() end)
+AboutTab:Button("💰 全图收集金币", function() end)
+AboutTab:Button("🥚 自动购买蛋", function() end)
+AboutTab:Button("🥚 自动打开隐藏蛋", function() end)
+AboutTab:Button("📋 自动领取任务奖励", function() end)
+AboutTab:Button("📍 场景传送功能", function() end)
+AboutTab:Button("⏱️ 反挂机 (每5分钟)", function() end)
+AboutTab:Button("──────────────────", function() end)
