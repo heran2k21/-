@@ -83,7 +83,7 @@ thanksText.Size = UDim2.new(1, -80, 0, 30)
 thanksText.Position = UDim2.new(0, 65, 0, 20)
 thanksText.BackgroundTransparency = 1
 thanksText.Font = Enum.Font.GothamBold
-thanksText.Text = "收集所有宠物-Jin定制"
+thanksText.Text = "Heran-Hub⚡"
 thanksText.TextSize = 24
 thanksText.TextColor3 = Color3.fromRGB(255, 255, 255)
 thanksText.TextXAlignment = Enum.TextXAlignment.Left
@@ -95,7 +95,7 @@ messageText.Size = UDim2.new(1, -80, 0, 40)
 messageText.Position = UDim2.new(0, 65, 0, 50)
 messageText.BackgroundTransparency = 1
 messageText.Font = Enum.Font.Gotham
-messageText.Text = "By:heran"
+messageText.Text = "⚠️反作弊绕过完成⚠️"
 messageText.TextSize = 16
 messageText.TextColor3 = Color3.fromRGB(200, 200, 200)
 messageText.TextXAlignment = Enum.TextXAlignment.Left
@@ -134,7 +134,7 @@ fadeTween.Completed:Connect(function()
     screenGui:Destroy()
 end)
 
-DTNAME = "收集所有宠物v0.71"
+DTNAME = "Heran-Hub⚡"
 local uiName = DTNAME;
 local a =
     setmetatable(
@@ -242,7 +242,7 @@ u.BorderSizePixel = 2
 u.BorderColor3 = x.BackgroundColor3
 u.Size = UDim2.new(0, 55, 0, 25)
 u.Font = Enum.Font.SourceSans
-u.Text = "Jin定制"
+u.Text = "菜单"
 u.TextColor3 = Color3.fromRGB(255, 255, 255)
 u.TextSize = 14.000
 u.Active = true
@@ -251,7 +251,7 @@ u.MouseButton1Down:connect(
     function()
         TOGGLE = not TOGGLE
         v.Visible = TOGGLE
-        u.Text = TOGGLE and "Jin" or "Jin"
+        u.Text = TOGGLE and "显示" or "隐藏"
     end
 )
 y.CornerRadius = c(0, 6)
