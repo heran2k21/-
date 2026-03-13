@@ -155,15 +155,112 @@ local function antiAfk()
 end
 
 -- 在主要标签页添加反挂机开关
-MainTab:Toggle("反挂机 (每5分钟跳跃)", "AntiAfk", false, function(Value)
+-- 反挂机功能 - 每2分钟执行一次，持续活动3秒以上
+local function antiAfk(immediate)
+    local player = game.Players.LocalPlayer
+    local VirtualUser = game:GetService("VirtualUser")
+    local runService = game:GetService("RunService")
+    
+    -- 等待角色加载
+    repeat task.wait() until player.Character
+    
+    -- 如果不是立即执行，先等待第一次
+    if not immediate then
+        task.wait(120) -- 首次等待2分钟
+    end
+    
+    while getgenv().AntiAfk do
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                local humanoid = player.Character.Humanoid
+                local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                local camera = game:GetService("Workspace").CurrentCamera
+                
+                if rootPart and camera then
+                    -- 保存原始位置和视角
+                    local oldPos = rootPart.Position
+                    local oldCFrame = camera.CFrame
+                    
+                    -- 开始持续活动（不低于3秒）
+                    local startTime = tick()
+                    local duration = 4 -- 持续4秒
+                    
+                    -- 创建移动和视角转动的连接
+                    local connection
+                    connection = runService.Heartbeat:Connect(function()
+                        local elapsed = tick() - startTime
+                        if elapsed >= duration then
+                            connection:Disconnect()
+                            return
+                        end
+                        
+                        -- 模拟虚拟用户活动
+                        VirtualUser:CaptureController()
+                        VirtualUser:ClickButton1(Vector2.new(), camera.CFrame)
+                        
+                        -- 模拟移动：做圆周运动
+                        local angle = (elapsed * 2) % (math.pi * 2) -- 随时间变化的角度
+                        local radius = 2 -- 移动半径
+                        local offset = Vector3.new(
+                            math.sin(angle) * radius,
+                            0,
+                            math.cos(angle) * radius
+                        )
+                        rootPart.CFrame = CFrame.new(oldPos + offset)
+                        
+                        -- 模拟视角转动：让视角跟随移动方向
+                        local lookAt = rootPart.Position + Vector3.new(
+                            math.sin(angle + math.pi/2) * 10,
+                            0,
+                            math.cos(angle + math.pi/2) * 10
+                        )
+                        camera.CFrame = CFrame.lookAt(rootPart.Position, lookAt)
+                        
+                        -- 模拟按键输入
+                        if elapsed % 1 < 0.5 then
+                            game:GetService("ContextActionService"):BindAction("AntiAfk", function() end, false, Enum.KeyCode.W)
+                        else
+                            game:GetService("ContextActionService"):BindAction("AntiAfk", function() end, false, Enum.KeyCode.A)
+                        end
+                        
+                        -- 模拟跳跃动作
+                        if elapsed % 2 < 0.1 then
+                            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                        end
+                    end)
+                    
+                    -- 等待活动完成
+                    task.wait(duration)
+                    
+                    -- 恢复原始位置
+                    rootPart.CFrame = CFrame.new(oldPos)
+                    camera.CFrame = oldCFrame
+                    
+                    -- 清理
+                    game:GetService("ContextActionService"):UnbindAction("AntiAfk")
+                end
+            end
+        end)
+        
+        -- 等待下一次执行
+        if getgenv().AntiAfk then
+            task.wait(120) -- 等待2分钟
+        end
+    end
+end
+
+-- 在主要标签页添加反挂机开关
+MainTab:Toggle("反挂机 (每2分钟，活动4秒)", "AntiAfk", false, function(Value)
     getgenv().AntiAfk = Value
     if Value then
-        -- 启动反挂机线程
-        coroutine.wrap(antiAfk)()
+        -- 启动反挂机线程，传入true表示立即执行一次
+        coroutine.wrap(function()
+            antiAfk(true) -- true表示立即执行
+        end)()
         library:Notify({
             Title = "反挂机",
-            Text = "已开启，每5分钟自动跳跃一次",
-            Duration = 3
+            Text = "已开启，立即执行一次活动\n之后每2分钟自动活动4秒",
+            Duration = 4
         })
     else
         library:Notify({
@@ -177,8 +274,8 @@ end)
 -- 使用按钮来显示关于信息（移除了联系方式）
 AboutTab:Button("📦 脚本名称：收集所有宠物", function() end)
 AboutTab:Button("👤 作者：Heran", function() end)
-AboutTab:Button("📌 版本：v0.81/Jin定制", function() end)
-AboutTab:Button("📅 最后更新：2026年3月8日", function() end)
+AboutTab:Button("📌 版本：v0.9/Jin定制", function() end)
+AboutTab:Button("📅 最后更新：2026年3月14日", function() end)
 AboutTab:Button("──────────────────", function() end)
 AboutTab:Button("💰 全图收集金币", function() end)
 AboutTab:Button("🥚 自动购买蛋", function() end)
