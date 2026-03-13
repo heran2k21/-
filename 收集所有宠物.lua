@@ -134,32 +134,13 @@ MainTab:Button("传送至", function()
 end)
 
 -- 反挂机功能 - 每5分钟执行一次
-local function antiAfk()
-    local player = game.Players.LocalPlayer
-    
-    -- 等待角色加载
-    repeat task.wait() until player.Character
-    
-    while getgenv().AntiAfk do
-        task.wait(300) -- 300秒 = 5分钟执行一次
-        
-        pcall(function()
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                local humanoid = player.Character.Humanoid
-                
-                -- 执行跳跃动作
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end)
-    end
-end
-
--- 在主要标签页添加反挂机开关
--- 反挂机功能 - 每2分钟执行一次，持续活动3秒以上
+-- 反挂机功能 - 每2分钟执行一次，模拟真实玩家行为
 local function antiAfk(immediate)
     local player = game.Players.LocalPlayer
     local VirtualUser = game:GetService("VirtualUser")
     local runService = game:GetService("RunService")
+    local userInputService = game:GetService("UserInputService")
+    local tweenService = game:GetService("TweenService")
     
     -- 等待角色加载
     repeat task.wait() until player.Character
@@ -170,6 +151,13 @@ local function antiAfk(immediate)
     end
     
     while getgenv().AntiAfk do
+        -- 发送执行通知（只发送一次）
+        library:Notify({
+            Title = "🔄 反挂机执行",
+            Text = "正在模拟玩家活动...",
+            Duration = 2
+        })
+        
         pcall(function()
             if player.Character and player.Character:FindFirstChild("Humanoid") then
                 local humanoid = player.Character.Humanoid
@@ -181,12 +169,14 @@ local function antiAfk(immediate)
                     local oldPos = rootPart.Position
                     local oldCFrame = camera.CFrame
                     
-                    -- 开始持续活动（不低于3秒）
-                    local startTime = tick()
-                    local duration = 4 -- 持续4秒
+                    -- 随机选择活动类型（让行为更自然）
+                    local activityType = math.random(1, 3)
+                    local duration = 3.5 + math.random() * 1.5 -- 3.5-5秒
                     
-                    -- 创建移动和视角转动的连接
+                    -- 创建更自然的移动和视角转动
+                    local startTime = tick()
                     local connection
+                    
                     connection = runService.Heartbeat:Connect(function()
                         local elapsed = tick() - startTime
                         if elapsed >= duration then
@@ -194,47 +184,88 @@ local function antiAfk(immediate)
                             return
                         end
                         
-                        -- 模拟虚拟用户活动
+                        -- 模拟玩家输入（最自然的反挂机方式）
                         VirtualUser:CaptureController()
                         VirtualUser:ClickButton1(Vector2.new(), camera.CFrame)
                         
-                        -- 模拟移动：做圆周运动
-                        local angle = (elapsed * 2) % (math.pi * 2) -- 随时间变化的角度
-                        local radius = 2 -- 移动半径
-                        local offset = Vector3.new(
-                            math.sin(angle) * radius,
-                            0,
-                            math.cos(angle) * radius
-                        )
-                        rootPart.CFrame = CFrame.new(oldPos + offset)
-                        
-                        -- 模拟视角转动：让视角跟随移动方向
-                        local lookAt = rootPart.Position + Vector3.new(
-                            math.sin(angle + math.pi/2) * 10,
-                            0,
-                            math.cos(angle + math.pi/2) * 10
-                        )
-                        camera.CFrame = CFrame.lookAt(rootPart.Position, lookAt)
-                        
-                        -- 模拟按键输入
-                        if elapsed % 1 < 0.5 then
-                            game:GetService("ContextActionService"):BindAction("AntiAfk", function() end, false, Enum.KeyCode.W)
+                        -- 根据随机选择的活动类型执行不同行为
+                        if activityType == 1 then
+                            -- 类型1：原地轻微晃动 + 视角转动
+                            local swayAmount = math.sin(elapsed * 5) * 0.3
+                            rootPart.CFrame = CFrame.new(oldPos + Vector3.new(swayAmount, 0, 0))
+                            
+                            -- 视角缓慢转动
+                            local lookAngle = elapsed * 30 -- 每秒转30度
+                            camera.CFrame = CFrame.lookAt(
+                                rootPart.Position,
+                                rootPart.Position + Vector3.new(math.sin(math.rad(lookAngle)), 0, math.cos(math.rad(lookAngle)))
+                            )
+                            
+                        elseif activityType == 2 then
+                            -- 类型2：小范围走动 + 查看周围
+                            local moveRadius = 1.5
+                            local angle = elapsed * 2
+                            local offset = Vector3.new(
+                                math.sin(angle) * moveRadius,
+                                0,
+                                math.cos(angle) * moveRadius
+                            )
+                            rootPart.CFrame = CFrame.new(oldPos + offset)
+                            
+                            -- 视角跟随移动方向
+                            local lookDir = (rootPart.Position + Vector3.new(math.sin(angle + 1), 0, math.cos(angle + 1)) - rootPart.Position).Unit
+                            camera.CFrame = CFrame.lookAt(rootPart.Position, rootPart.Position + lookDir * 10)
+                            
                         else
-                            game:GetService("ContextActionService"):BindAction("AntiAfk", function() end, false, Enum.KeyCode.A)
+                            -- 类型3：模拟跳跃和转向
+                            if elapsed % 2 < 0.2 then
+                                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                            end
+                            
+                            -- 随机转向
+                            rootPart.CFrame = CFrame.new(oldPos) * CFrame.Angles(0, math.rad(elapsed * 45), 0)
+                            
+                            -- 视角上下轻微移动（像在观察）
+                            camera.CFrame = CFrame.lookAt(
+                                rootPart.Position,
+                                rootPart.Position + Vector3.new(0, math.sin(elapsed * 3) * 2, 10)
+                            )
                         end
                         
-                        -- 模拟跳跃动作
-                        if elapsed % 2 < 0.1 then
-                            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                        -- 模拟按键（WASD随机按）
+                        if math.random() < 0.3 then
+                            local keys = {Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D}
+                            local randomKey = keys[math.random(1, 4)]
+                            game:GetService("ContextActionService"):BindAction("AntiAfk", function() end, false, randomKey)
+                            task.wait(0.1)
+                            game:GetService("ContextActionService"):UnbindAction("AntiAfk")
                         end
                     end)
                     
                     -- 等待活动完成
                     task.wait(duration)
                     
-                    -- 恢复原始位置
-                    rootPart.CFrame = CFrame.new(oldPos)
-                    camera.CFrame = oldCFrame
+                    -- 平滑地回到原位（使用Tween）
+                    if rootPart and camera then
+                        local tweenInfo = TweenInfo.new(
+                            0.5,
+                            Enum.EasingStyle.Quad,
+                            Enum.EasingDirection.Out
+                        )
+                        
+                        local goals = {
+                            CFrame = CFrame.new(oldPos)
+                        }
+                        
+                        local tween = tweenService:Create(rootPart, tweenInfo, goals)
+                        tween:Play()
+                        
+                        -- 视角慢慢转回
+                        task.wait(0.1)
+                        camera.CFrame = oldCFrame
+                        
+                        task.wait(0.4) -- 等待tween完成
+                    end
                     
                     -- 清理
                     game:GetService("ContextActionService"):UnbindAction("AntiAfk")
@@ -250,22 +281,22 @@ local function antiAfk(immediate)
 end
 
 -- 在主要标签页添加反挂机开关
-MainTab:Toggle("反挂机 (每2分钟，活动4秒)", "AntiAfk", false, function(Value)
+MainTab:Toggle("🛡️ 反挂机保护", "AntiAfk", false, function(Value)
     getgenv().AntiAfk = Value
     if Value then
         -- 启动反挂机线程，传入true表示立即执行一次
         coroutine.wrap(function()
-            antiAfk(true) -- true表示立即执行
+            antiAfk(true)
         end)()
         library:Notify({
-            Title = "反挂机",
-            Text = "已开启，立即执行一次活动\n之后每2分钟自动活动4秒",
-            Duration = 4
+            Title = "🛡️ 反挂机已开启",
+            Text = "保护已激活，每2分钟自动活动",
+            Duration = 3
         })
     else
         library:Notify({
-            Title = "反挂机",
-            Text = "已关闭",
+            Title = "🛡️ 反挂机关闭",
+            Text = "保护已停用",
             Duration = 2
         })
     end
