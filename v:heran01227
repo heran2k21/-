@@ -1,1 +1,291 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/heran2k21/-/refs/heads/main/%E6%94%B6%E9%9B%86%E6%89%80%E6%9C%89%E5%AE%A0%E7%89%A9.lua"))()
+```javascript
+// Roblox 外置注入式脚本 UI 翻译器
+// 功能：扫描并翻译指定UI元素中的文本，支持中英文互译
+// 使用方法：在注入脚本后调用 translateUI(targetLanguage, sourceLanguage) 函数
+
+(function() {
+    'use strict';
+
+    // 缓存翻译结果的映射表，避免重复翻译相同文本
+    const translationCache = new Map();
+
+    // 受信任的翻译API端点列表（按优先级排序）
+    const TRANSLATION_APIS = [
+        {
+            name: 'MyMemory',
+            url: 'https://api.mymemory.translated.net/get',
+            parse: (data) => data.responseData?.translatedText || null
+        },
+        {
+            name: 'Lingva',
+            url: 'https://lingva.ml/api/v1/{source}/{target}/{text}',
+            parse: (data) => data.translation || null
+        }
+    ];
+
+    // 当前使用的API索引（用于故障转移）
+    let currentApiIndex = 0;
+
+    /**
+     * 通过API翻译文本
+     * @param {string} text - 需要翻译的文本
+     * @param {string} targetLang - 目标语言代码 (如 'zh', 'en')
+     * @param {string} sourceLang - 源语言代码 (如 'auto', 'en')
+     * @returns {Promise<string>} 翻译后的文本
+     */
+    async function translateText(text, targetLang, sourceLang = 'auto') {
+        // 检查缓存
+        const cacheKey = `${sourceLang}|${targetLang}|${text}`;
+        if (translationCache.has(cacheKey)) {
+            return translationCache.get(cacheKey);
+        }
+
+        // 去除首尾空格，如果是空字符串则直接返回
+        const trimmedText = text.trim();
+        if (trimmedText.length === 0) return text;
+        
+        // 如果文本只包含数字、标点或特殊符号，不进行翻译
+        if (/^[\d\s\p{P}]+$/u.test(trimmedText)) return text;
+
+        // 尝试可用的API
+        for (let attempt = 0; attempt < TRANSLATION_APIS.length; attempt++) {
+            const api = TRANSLATION_APIS[currentApiIndex];
+            try {
+                let requestUrl;
+                if (api.name === 'MyMemory') {
+                    requestUrl = `${api.url}?q=${encodeURIComponent(trimmedText)}&langpair=${sourceLang}|${targetLang}`;
+                } else { // Lingva
+                    requestUrl = api.url
+                        .replace('{source}', sourceLang)
+                        .replace('{target}', targetLang)
+                        .replace('{text}', encodeURIComponent(trimmedText));
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const response = await fetch(requestUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                const translated = api.parse(data);
+                
+                if (translated && translated !== trimmedText) {
+                    translationCache.set(cacheKey, translated);
+                    return translated;
+                }
+            } catch (error) {
+                console.warn(`[翻译器] API ${api.name} 失败:`, error);
+                // 切换到下一个API
+                currentApiIndex = (currentApiIndex + 1) % TRANSLATION_APIS.length;
+            }
+        }
+
+        // 所有API都失败，返回原文本
+        console.warn('[翻译器] 所有翻译API均不可用，返回原文本');
+        return text;
+    }
+
+    /**
+     * 判断元素是否应该被翻译（过滤掉不需要翻译的UI元素）
+     * @param {Element} element - DOM元素
+     * @returns {boolean}
+     */
+    function shouldTranslateElement(element) {
+        // 跳过不可见元素
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return false;
+        
+        // 检查元素的计算样式
+        const style = window.getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden') return false;
+        
+        // 跳过输入框、密码框等用户交互元素的值（但保留其占位符）
+        const tagName = element.tagName.toLowerCase();
+        if (tagName === 'input' && element.type !== 'text' && element.type !== 'search') return false;
+        if (tagName === 'textarea') return false;
+        
+        // 跳过脚本、样式标签
+        if (tagName === 'script' || tagName === 'style') return false;
+        
+        // 跳过只有空白字符的元素
+        const text = element.textContent?.trim();
+        if (!text || text.length === 0) return false;
+        
+        // 跳过纯数字或符号
+        if (/^[\d\s\p{P}]+$/u.test(text)) return false;
+        
+        return true;
+    }
+
+    /**
+     * 翻译单个文本节点
+     * @param {Text} textNode - 文本节点
+     * @param {string} targetLang - 目标语言
+     * @param {string} sourceLang - 源语言
+     * @returns {Promise<void>}
+     */
+    async function translateTextNode(textNode, targetLang, sourceLang) {
+        const originalText = textNode.nodeValue;
+        if (!originalText || originalText.trim().length === 0) return;
+        
+        // 跳过已经翻译过的节点（添加标记避免重复翻译）
+        if (textNode.__translated) return;
+        
+        const translated = await translateText(originalText, targetLang, sourceLang);
+        if (translated !== originalText) {
+            textNode.nodeValue = translated;
+            textNode.__translated = true;
+        }
+    }
+
+    /**
+     * 翻译单个元素的属性（如placeholder、title等）
+     * @param {Element} element - DOM元素
+     * @param {string} targetLang - 目标语言
+     * @param {string} sourceLang - 源语言
+     * @returns {Promise<void>}
+     */
+    async function translateElementAttributes(element, targetLang, sourceLang) {
+        const attributesToTranslate = ['placeholder', 'title', 'alt', 'aria-label', 'value'];
+        
+        for (const attr of attributesToTranslate) {
+            const attrValue = element.getAttribute(attr);
+            if (attrValue && attrValue.trim().length > 0 && !/^[\d\s\p{P}]+$/u.test(attrValue)) {
+                if (element.__translatedAttr && element.__translatedAttr[attr]) continue;
+                
+                const translated = await translateText(attrValue, targetLang, sourceLang);
+                if (translated !== attrValue) {
+                    element.setAttribute(attr, translated);
+                    if (!element.__translatedAttr) element.__translatedAttr = {};
+                    element.__translatedAttr[attr] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * 翻译UI界面
+     * @param {string} targetLang - 目标语言代码 (如 'zh', 'en', 'ja', 'ko')
+     * @param {string} sourceLang - 源语言代码 (默认 'auto' 自动检测)
+     * @param {string|Element} container - 要翻译的容器元素或选择器，默认为body
+     */
+    async function translateUI(targetLang, sourceLang = 'auto', container = 'body') {
+        console.log(`[翻译器] 开始翻译 UI: ${sourceLang} -> ${targetLang}`);
+        
+        // 获取容器元素
+        let rootElement;
+        if (typeof container === 'string') {
+            rootElement = document.querySelector(container);
+            if (!rootElement) {
+                console.error(`[翻译器] 找不到容器元素: ${container}`);
+                return;
+            }
+        } else if (container instanceof Element) {
+            rootElement = container;
+        } else {
+            rootElement = document.body;
+        }
+        
+        // 收集所有需要翻译的文本节点
+        const textNodes = [];
+        const elementsWithAttributes = new Set();
+        
+        const walker = document.createTreeWalker(
+            rootElement,
+            NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode: function(node) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        // 跳过脚本和样式内的文本
+                        let parent = node.parentElement;
+                        while (parent && parent !== rootElement) {
+                            const tag = parent.tagName?.toLowerCase();
+                            if (tag === 'script' || tag === 'style') return NodeFilter.FILTER_REJECT;
+                            parent = parent.parentElement;
+                        }
+                        // 检查文本节点父元素是否需要翻译
+                        if (parent && shouldTranslateElement(parent)) {
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                        return NodeFilter.FILTER_SKIP;
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        // 收集需要翻译属性的元素
+                        if (shouldTranslateElement(node)) {
+                            elementsWithAttributes.add(node);
+                        }
+                        return NodeFilter.FILTER_SKIP;
+                    }
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }
+        );
+        
+        while (walker.nextNode()) {
+            if (walker.currentNode.nodeType === Node.TEXT_NODE) {
+                textNodes.push(walker.currentNode);
+            }
+        }
+        
+        // 添加元素属性翻译
+        for (const element of elementsWithAttributes) {
+            await translateElementAttributes(element, targetLang, sourceLang);
+        }
+        
+        // 批量翻译文本节点（控制并发数量）
+        const batchSize = 10;
+        for (let i = 0; i < textNodes.length; i += batchSize) {
+            const batch = textNodes.slice(i, i + batchSize);
+            await Promise.all(batch.map(node => translateTextNode(node, targetLang, sourceLang)));
+            
+            // 显示进度
+            const progress = Math.min(i + batchSize, textNodes.length);
+            console.log(`[翻译器] 翻译进度: ${progress}/${textNodes.length}`);
+        }
+        
+        console.log(`[翻译器] UI 翻译完成！共翻译 ${textNodes.length} 个文本节点和 ${elementsWithAttributes.size} 个元素的属性`);
+    }
+
+    /**
+     * 重置翻译缓存（用于清除已翻译标记，允许重新翻译）
+     */
+    function resetTranslationCache() {
+        translationCache.clear();
+        
+        // 移除所有翻译标记
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            delete walker.currentNode.__translated;
+        }
+        
+        // 移除元素属性翻译标记
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+            delete el.__translatedAttr;
+        }
+        
+        console.log('[翻译器] 翻译缓存已重置');
+    }
+
+    // 导出函数到全局作用域（供注入脚本调用）
+    window.RobloxUITranslator = {
+        translateUI,
+        resetTranslationCache,
+        // 常用的语言代码
+        languages: {
+            '中文': 'zh',
+            '英文': 'en',
+            '日文': 'ja',
+            '韩文': 'ko',
+            '法文': 'fr',
+            '德文': 'de',
+            '俄文': 'ru',
+            '西班牙文': 'es',
+            '葡萄牙文': 'pt',
+            '自动检测': 'auto'
+        }
+    };
+
+    console.log('[翻译器] Roblox UI 翻译脚本已加载，调用 window.RobloxUITranslator.translateUI("zh") 开始翻译');
+})();
+```
